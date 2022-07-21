@@ -1,4 +1,4 @@
-import { launch, alertClose, goto, checkPopup, evalCode, evalCity, getPageLength, getData } from './modules/crawler.js'
+import { launch, alertClose, goto, checkPopup, evalCode, evalCity, getPageLength, getData, writeFile } from './modules/crawler.js'
 //crawlling 할 js 파일을 import 시켜준다.
 //mac 은 자동완성이 command + i 이다.
 
@@ -22,5 +22,7 @@ async function main() {
   await getPageLength()
   // 페이지 수만큼 반복
   await getData()
+  // 크롤링 한 데이터를 json 파일로 저장
+  await writeFile()
 }
 main()

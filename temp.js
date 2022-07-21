@@ -1,8 +1,36 @@
 // crawler.js의 콘솔에 들어가는 스크립트를 짜보자 
 
-document.querySelectorAll("#printZone > table:nth-child(2) > tbody tr")
+// element를 잘 찾는 것이 관건, 부모 element를 잘 찾아서 뽑아와야 한다. class 이름은 ./ , id는 #을 붙인다.
 
+var trArr = document.querySelectorAll("#printZone > table:nth-child(2) > tbody tr")
+var returnData = []
 
+for(var i=0; i < trArr.length; i++){
+  debugger
+
+  var currentTr = trArr[i]
+
+  var name = currentTr.querySelector('td')?.innerText
+  var address = currentTr.querySelectorAll('td')[2]?.innerText
+  var tel = currentTr.querySelectorAll('td')[3]?.innerText
+  var open = currentTr.querySelectorAll('td')[4]?.innerText
+  var jsonData = {
+    'name' : name,
+    'address' : address,
+    'tel' : tel,
+    'open' : open
+  }
+  // 만약 key 이름과 value 이름이 같을 거면은 value만 입력해주면 그 value값의 이름으로 key값이 설정 된다.
+  if(jsonData.address != undefined){
+    returnData.push(jsonData)
+    //push 함수는 배열에 데이터를 넣을 때 쓰는 함수
+  }
+}
+console.log(returnData)
+// ? 표를 붙여주는 것은 있으면 잡고 없으면 indifined를 출력해서 스킵시킨다. 그래서 오류를 피할 수 있다. 
+//for 문으로 이름, 주소, 전화번호, 오픈 시간을 가져왔다.
+
+//json 파일로 만들거다.
 
 
 
