@@ -70,7 +70,7 @@ const evalCity = async function (sigungu) {
 const getData = async function () {
   //페이지의 수 만큼 반복 ! 반복시켜서 클릭시킨다. 그리고 필요한 데이터를 뽑을 것이다.
   //현재 페이지가 1이니까 i는 1부터 시작해서 1씩 늘어나고 페이지수 만큼 반복
-  for (let i = 1; i < pageLength; i++) {
+  for (let i = 1; i <= pageLength; i++) {
     // console.log('i:', i)
     await page.waitForSelector(pageSelector)
     // getPageLength의 부모와 같은 js path
@@ -114,14 +114,18 @@ const getData = async function () {
     finalData = finalData.concat(infoArr)
     // concat() 은 merge 시켜주는 함수, 배열1.concat(배열2) >> 배열1,배열2를 merge시킨다.(하나의 배열로)
     // console.log('finalData:', finalData)
+
+
+    if (pageLength != i) {
+      // 다음 페이지 클릭해서 이동
+      await page.evaluate(function (i, pageSelector) {
+        document.querySelector(pageSelector).children[i].click()
+      }, i, pageSelector) //evaluate 끝
+    }
+
     console.log('finalData길이:', finalData.length)
-
-    // 다음 페이지 클릭해서 이동
-    await page.evaluate(function (i, pageSelector) {
-      document.querySelector(pageSelector).children[i].click()
-
-    }, i, pageSelector) //evaluate 끝
   }   // end for
+
   browser.close()     // crawling이 끝났으니 브라우져 닫기
 }       // end getData
 
@@ -148,7 +152,7 @@ const getPageLength = async function () {
 }
 
 
-const writeFile = async function(){
+const writeFile = async function () {
   const stringData = JSON.stringify(finalData)     //finalData는 자료유형이 object니까 string으로 바꿔줄거야 !
   const filePath = './json/temp.json'       // 이것도 크롤링할 때 마다 이름 + 날짜로 만들 수 있다.
   await fs.writeFileSync(filePath, stringData)// import 한 fs를 써보자,,fs.writeFileSync(저장 될 경로, 내가 쓸 데이터), node.js의 라이브러리

@@ -24,5 +24,7 @@ async function main() {
   await getData()
   // 크롤링 한 데이터를 json 파일로 저장
   await writeFile()
+
+  process.exit(1)
 }
 main()
