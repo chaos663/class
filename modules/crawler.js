@@ -21,12 +21,18 @@ let browser = null
 let page = null
 let pageLength = 0
 let finalData = []
+let sido = null
+let sigungu = null
 const pageSelector = `body > table:nth-child(2) > tbody > tr > td:nth-child(1) > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(5) > td > table:nth-child(5) > tbody > tr:nth-child(4) > td > table > tbody > tr > td:nth-child(3)`
 
 
 
-//실행, init
-const launch = async function () {  //비동기 처리
+//실행, init, sido,sigungu는 카테고리작업
+const launch = async function ( arg1, arg2) {  //비동기 처리
+  //카테고리작업
+  sido = arg1
+  sigungu = arg2
+  //카테고리작업
   browser = await puppeteer.launch(launchConfig); //실행할 때, 설정한 launchConfig를 넣는다. 그럼 chrome 브라우저가 실행이 된다.
   // 지역변수
   const pages = await browser.pages(); // 새로운 브라우저가 열린다.
@@ -50,19 +56,20 @@ const checkPopup = async function () {
 }
 
 // name이라고 class 네임을 만듦, name드간 곳에 다 넣어주면 name 함수에서 받을 수 있음
-const evalCode = async function (name) {
-  console.log(`#continents > li.${name} > a`)
-  await page.evaluate(function (name) {
-    document.querySelector(`#continents > li.${name} > a`).click()
-  }, name)
+const evalCode = async function () {
+  // console.log('')
+  // console.log(`#continents > li.${name} > a`)
+  await page.evaluate(function (sido) {
+    document.querySelector(`#continents > li.${sido} > a`).click()
+  }, sido)
   // ${}하면 문자를 합칠 수 있다.
 }
 // 시군구 클릭
-const evalCity = async function (sigungu) {
+const evalCity = async function () {
   // 해당 엘리먼트를 찾을때까지 기다림
-  await page.waitForSelector(`#container #continents > li.songpa_gu > a`)
+  await page.waitForSelector(`#container #continents > li.${sigungu} > a`)
   await page.evaluate(function (sigungu) {
-    document.querySelector(`#container #continents > li.songpa_gu > a`).click()
+    document.querySelector(`#container #continents > li.${sigungu} > a`).click()
     // 두번 째 엘리먼트를 사용할 것이다.
   }, sigungu)
 }
@@ -75,7 +82,7 @@ const getData = async function () {
     await page.waitForSelector(pageSelector)
     // getPageLength의 부모와 같은 js path
     // 인자로 i가 들어가고 i를 return
-    const infoArr = await page.evaluate(function (i, pageSelector) {
+    const infoArr = await page.evaluate(function (i, sido, sigungu) {
       // document.querySelector(pageSelector).children[i].click() //1~7페이지까지 클릭이 일어나면서 페이지가 바뀐다.
       // element를 잘 찾는 것이 관건, 부모 element를 잘 찾아서 뽑아와야 한다. class 이름은 ./ , id는 #을 붙인다.
 
@@ -86,15 +93,18 @@ const getData = async function () {
 
         var currentTr = trArr[i]
 
-        var name = currentTr.querySelector('td')?.innerText
-        var address = currentTr.querySelectorAll('td')[2]?.innerText
-        var tel = currentTr.querySelectorAll('td')[3]?.innerText
-        var open = currentTr.querySelectorAll('td')[4]?.innerText
+        var name = currentTr.querySelector('td')?.innerText.replaceAll('\n','').replaceAll('\t','')
+        var address = currentTr.querySelectorAll('td')[2]?.innerText.replaceAll('\n','').replaceAll('\t','')
+        var tel = currentTr.querySelectorAll('td')[3]?.innerText.replaceAll('\n','').replaceAll('\t','')
+        var open = currentTr.querySelectorAll('td')[4]?.innerText.replaceAll('\n','').replaceAll('\t','')
+
         var jsonData = {
           'name': name,
           'address': address,
           'tel': tel,
-          'open': open
+          'open': open,
+          'sido' : sido,
+          'sigungu' : sigungu
         }
         // 만약 key 이름과 value 이름이 같을 거면은 value만 입력해주면 그 value값의 이름으로 key값이 설정 된다.
         if (jsonData.address != undefined) {
@@ -110,7 +120,7 @@ const getData = async function () {
 
       //json 파일로 만들거다.
 
-    }, i, pageSelector)     // end eval
+    }, i,sido,sigungu)     // end eval
     finalData = finalData.concat(infoArr)
     // concat() 은 merge 시켜주는 함수, 배열1.concat(배열2) >> 배열1,배열2를 merge시킨다.(하나의 배열로)
     // console.log('finalData:', finalData)
@@ -122,6 +132,7 @@ const getData = async function () {
         document.querySelector(pageSelector).children[i].click()
       }, i, pageSelector) //evaluate 끝
     }
+    await page.waitForSelector(pageSelector)
 
     console.log('finalData길이:', finalData.length)
   }   // end for
@@ -154,7 +165,16 @@ const getPageLength = async function () {
 
 const writeFile = async function () {
   const stringData = JSON.stringify(finalData)     //finalData는 자료유형이 object니까 string으로 바꿔줄거야 !
-  const filePath = './json/temp.json'       // 이것도 크롤링할 때 마다 이름 + 날짜로 만들 수 있다.
+  const exist = fs.existsSync(`./json/${ sido }`)
+  if(!exist){
+    fs.mkdir(`./json/${ sido }`, { recursive : true}, function(err){
+      console.log(err)
+    })
+  }
+
+  const filePath = `./json/${sido}/${sigungu}.json`      
+  // 이것도 크롤링할 때 마다 이름 + 날짜로 만들 수 있다.
+  // 시도 디렉토리도 자동으로 만들어 줄 것이다.
   await fs.writeFileSync(filePath, stringData)// import 한 fs를 써보자,,fs.writeFileSync(저장 될 경로, 내가 쓸 데이터), node.js의 라이브러리
 }
 

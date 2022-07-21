@@ -8,10 +8,12 @@
   },
   "author": "",
   "license": "ISC",
-  "type":"module",
+  "type": "module",
   "dependencies": {
     "axios": "^0.27.2",
     "axois": "^0.0.1-security",
+    "dotenv": "^16.0.1",
+    "mongoose": "^6.4.6",
     "puppeteer": "^15.4.0",
     "puppeteer-core": "^15.4.0"
   }
